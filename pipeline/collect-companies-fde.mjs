@@ -98,7 +98,7 @@ const NAME_BLACKLIST = [
   "船务", "快递", "汽车", "摩托", "电动车", "电池", "光伏", "储能", "风电", "核电", "水务", "燃气", "环保",
   "装备", "精密", "机械", "仪器", "仪表", "材料", "新材", "五金", "模具", "塑胶", "包装", "印刷", "芯片",
   "半导体", "集成电路", "晶圆", "光电", "面板", "显示", "手机", "相机", "机器人", "无人机", "兵器", "军工",
-  "国防", "陵园", "墓", "殡葬", "婚庆", "美容", "美发", "健身", "体育文化", "俱乐部",
+  "国防", "陵园", "墓", "殡葬", "婚庆", "美容", "美发", "健身", "体育文化", "俱乐部", "数控", "模塑", "电子", "检测", "磁业", "磁材", "钢构", "铝模",
 ];
 const JUNK_PHRASE = [
   "怎么", "如何", "输入", "输出", "表示", "等于", "选择", "点击", "对应", "键盘", "罗马", "阿拉伯", "字母",
@@ -123,11 +123,13 @@ const STRICT_END = /(科技|信息技术|数智|软件|数字|网络|咨询|算�
 const LEGAL_MID = "(?:科技|信息技术|信息科技|智能科技|数据科技|数字科技|网络科技|系统集成|人工智能|数据服务|数智科技|数智|数据|智能|软件|云服务|云计算|数字|咨询|自动化|信息服务|技术服务)";
 
 const FUNC_FIRST = "的了在与及为对从被把让使这那该等各每更最已将可就都是其含和或并用是以个通依按据本众多若干上下前后内外高低快慢新旧好坏大小多少要需先再又还很无不非关针某均皆且然而因此所以如若将请";
+const LEGAL_JUNK = ["是由", "关于", "针对", "更多", "无需", "一键", "轻松", "此次", "认定", "包括", "打造", "以下", "如下", "其中"];
 function blacklisted(name, kind = "short") {
   const n = name.toLowerCase();
   if (STOP_NAMES.has(name)) return true;
   if (BLOCK.some((b) => n.includes(b.toLowerCase()))) return true;
   if (NAME_BLACKLIST.some((b) => name.includes(b))) return true;
+  if (LEGAL_JUNK.some((b) => name.includes(b))) return true;
   if (kind !== "legal" && JUNK_PHRASE.some((b) => name.includes(b))) return true;
   if (kind === "short" && !STRICT_END.test(name)) return true;
   if (kind === "short" && FUNC_FIRST.includes(name[0])) return true;
@@ -248,7 +250,7 @@ function extractCandidates(blocks, fullText) {
     const k = cleanName(name);
     if (!k || k.length < 3) return;
     // 全路径去除地名前缀（如 杭州有年科技 → 有年科技）
-    const lead = k.match(new RegExp(`^(${CITIES}|${PROVINCES})市?(?=[\\u4e00-\\u9fa5]{3,}$)`));
+    const lead = k.match(new RegExp(`^(${CITIES}|${PROVINCES})市?(?=[\\u4e00-\\u9fa5]{2,}$)`));
     let kname = k, kregion = region;
     if (lead && lead[1].length >= 2) {
       kname = k.slice(lead[0].length);
@@ -513,18 +515,25 @@ async function harvest(batch) {
       searchCalls++;
     }
     let qNew = 0;
-    for (const u of urls) {
-      if (processedUrls.has(u)) continue;
-      processedUrls.add(u);
-      saveResume(u);
-      const { n } = await harvestPage(u, { type, city });
-      fetched++;
-      if (n > 0) {
-        inserted += n;
-        qNew += n;
-        console.log(`  [${q}] ${new URL(u).hostname} +${n}`);
+    const todo = urls.filter((u) => !processedUrls.has(u));
+    for (let i = 0; i < todo.length; i += 3) {
+      const chunk = todo.slice(i, i + 3);
+      for (const u of chunk) {
+        processedUrls.add(u);
+        saveResume(u);
       }
-      await sleep(350);
+      const rs = await Promise.all(chunk.map((u) => harvestPage(u, { type, city })));
+      fetched += chunk.length;
+      rs.forEach(({ n }, idx) => {
+        if (n > 0) {
+          inserted += n;
+          qNew += n;
+          try {
+            console.log(`  [${q}] ${new URL(chunk[idx]).hostname} +${n}`);
+          } catch {}
+        }
+      });
+      await sleep(250);
     }
     if (inserted % 1 === 0 && inserted > 0 && Math.floor(inserted / 50) !== Math.floor((inserted - qNew) / 50)) {
       console.log(`  == 累计新增 ${inserted}｜总数 ${db.prepare("SELECT COUNT(*) n FROM companies").get().n} ==`);
