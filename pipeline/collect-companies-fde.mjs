@@ -441,7 +441,7 @@ function buildQueries(batch) {
       qs.push({ q: `${c} AI 公司 服务商 名单`, type: "FDE服务商", city: c });
       qs.push({ q: `${c} 人工智能 企业 名单`, type: "FDE服务商", city: c });
     }
-  } else {
+  } else if (batch === 2) {
     for (const ind of INDUSTRIES) {
       qs.push({ q: `${ind} AI 解决方案 公司`, type: "FDE服务商", city: null });
       qs.push({ q: `${ind} 数字化 服务商 AI 名单`, type: "FDE服务商", city: null });

@@ -22,10 +22,10 @@ echo "→ 服务器端权限与重载"
 ssh -o BatchMode=yes -i "$KEY" "$HOST" "chmod -R 755 $REMOTE_ROOT; chcon -R -t httpd_sys_content_t $REMOTE_ROOT 2>/dev/null; systemctl reload nginx 2>/dev/null || true"
 
 echo "→ 验收"
-CODE=$(ssh -o BatchMode=yes -i "$KEY" "$HOST" "curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1/persons.html" || echo "000")
+CODE=$(ssh -o BatchMode=yes -i "$KEY" "$HOST" "curl -sk -o /dev/null -w '%{http_code}' https://127.0.0.1/persons.html" || echo "000")
 echo "验收状态: $CODE"
 if [ "$CODE" = "200" ]; then
-  echo "部署成功"
+  echo "部署成功（https persons.html 200）"
 else
   echo "验收失败（$CODE）"
   exit 1
