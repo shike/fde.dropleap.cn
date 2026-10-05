@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import Link from "next/link";
 import "./globals.css";
 
@@ -42,7 +41,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" className="h-full antialiased">
       <body className="flex min-h-full flex-col bg-neutral-50 text-neutral-900">
-        <Script src="https://hm.baidu.com/hm.js?52e20725c30e647acc0ef06411087986" strategy="afterInteractive" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'var _hmt = _hmt || [];(function() { var hm = document.createElement("script"); hm.src = "https://hm.baidu.com/hm.js?52e20725c30e647acc0ef06411087986"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm, s); })();',
+          }}
+        />
         <header className="sticky top-0 z-20 border-b border-neutral-200/80 bg-white/85 backdrop-blur-md">
           <div className="mx-auto flex h-14 max-w-6xl items-center gap-8 px-4">
             <Link href="/" className="flex items-center gap-2.5">
