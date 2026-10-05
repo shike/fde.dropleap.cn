@@ -1,0 +1,18 @@
+[Unit]
+Description=FDE Directory (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/srv/fde-directory/web
+ExecStart=/usr/bin/env pnpm start
+Restart=always
+RestartSec=3
+Environment=NODE_ENV=production
+Environment=PORT=3100
+Environment=FDE_DB=/srv/fde-directory/data/fde.db
+# 只读打开数据库：生产服务不写库（写入只发生在本地管道，随部署同步）
+User=ubuntu
+
+[Install]
+WantedBy=multi-user.target

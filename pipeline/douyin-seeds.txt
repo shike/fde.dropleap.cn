@@ -1,0 +1,8 @@
+# 抖音 FDE 创作者种子清单
+# 每行一条，支持以下格式（# 开头为注释）：
+#   https://www.douyin.com/user/MS4wLjABAAAA....   （主页链接，最好）
+#   https://v.douyin.com/xxxxxx/                   （分享短链，我会解析）
+#   名字（如：某博主昵称）                          （只有名字时我会先搜后抓）
+#
+# 在下面粘贴你的种子：
+

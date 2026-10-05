@@ -1,0 +1,22 @@
+# 依赖与构建产物
+node_modules/
+web/node_modules/
+web/.next/
+web/out/
+web/public/data/
+
+# 数据库（含联系方式内部表，严禁入库——隐私红线 SPEC §6）
+data/
+
+# 日志与临时文件
+*.log
+pipeline/*.jsonl
+pipeline/douyin-discovered.jsonl
+.DS_Store
+
+# 部署目标配置（含服务器信息）
+scripts/.deploy.env
+
+# 编辑器
+.vscode/
+.idea/

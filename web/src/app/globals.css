@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+:root {
+  --accent: #4f46e5;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "tnum";
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #4f46e5;
+  color: #fff;
+}
+
+/* 细腻的卡片悬停 */
+.card-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.12);
+  border-color: #d4d4d8;
+}
+
+/* 数字用等宽变体 */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
