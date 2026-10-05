@@ -97,7 +97,7 @@ export default function PersonsPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="搜索登录名 / 公司 / 简介"
-            className="h-10 w-64 rounded-xl border border-neutral-200 bg-white px-3.5 text-sm outline-none transition-colors placeholder:text-neutral-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
+            className="h-10 min-w-0 flex-1 rounded-xl border sm:w-64 sm:flex-none border-neutral-200 bg-white px-3.5 text-sm outline-none transition-colors placeholder:text-neutral-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50"
           />
           <button className="h-10 rounded-xl bg-neutral-900 px-4 text-sm font-medium text-white hover:bg-neutral-700">
             搜索

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SiteHeader } from "@/components/SiteHeader";
 import "./globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fde.dropleap.cn";
@@ -47,35 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               'var _hmt = _hmt || [];(function() { var hm = document.createElement("script"); hm.src = "https://hm.baidu.com/hm.js?52e20725c30e647acc0ef06411087986"; var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(hm, s); })();',
           }}
         />
-        <header className="sticky top-0 z-20 border-b border-neutral-200/80 bg-white/85 backdrop-blur-md">
-          <div className="mx-auto flex h-14 max-w-6xl items-center gap-8 px-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-[11px] font-bold tracking-tight text-white">
-                FDE
-              </span>
-              <span className="text-[15px] font-semibold tracking-tight">
-                中国 FDE 名录
-              </span>
-            </Link>
-            <nav className="ml-auto flex items-center gap-1 text-sm">
-              {NAV.map((n) => (
-                <Link
-                  key={n.href}
-                  href={n.href}
-                  className="rounded-lg px-3 py-1.5 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
-                >
-                  {n.label}
-                </Link>
-              ))}
-              <Link
-                href="/nominate"
-                className="ml-2 rounded-lg bg-neutral-900 px-3.5 py-1.5 font-medium text-white transition-colors hover:bg-neutral-700"
-              >
-                自荐上榜
-              </Link>
-            </nav>
-          </div>
-        </header>
+        <SiteHeader />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">{children}</main>
         <footer className="border-t border-neutral-200/80 bg-white">
           <div className="mx-auto max-w-6xl px-4 py-10">
@@ -113,7 +86,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
             <p className="mt-8 border-t border-neutral-100 pt-6 text-xs text-neutral-400">
-              © 2026 中国 FDE 名录 · 持续更新 · 数据来自公开渠道
+              © 2026 中国 FDE 名录 · 持续更新 · 数据来自公开渠道 ·
+              <a
+                href="https://beian.miit.gov.cn/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-neutral-600"
+              >
+                苏ICP备2026061297号
+              </a>
             </p>
           </div>
         </footer>

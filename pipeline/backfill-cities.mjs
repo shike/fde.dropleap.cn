@@ -14,6 +14,9 @@ try {
 } catch {}
 
 const CITY_RULES = [
+  ["上海", /based\s+in\s+shanghai/i], ["北京", /based\s+in\s+beijing/i],
+  ["深圳", /based\s+in\s+shenzhen/i], ["广州", /based\s+in\s+guangzhou/i],
+  ["杭州", /based\s+in\s+hangzhou/i], ["苏州", /based\s+in\s+suzhou/i],
   ["北京", /beijing|北京/i], ["上海", /shanghai|上海/i], ["深圳", /shenzhen|深圳/i],
   ["杭州", /hangzhou|杭州/i], ["广州", /guangzhou|广州/i], ["苏州", /suzhou|苏州/i],
   ["成都", /chengdu|成都/i], ["南京", /nanjing|南京/i], ["武汉", /wuhan|武汉|光谷/i],

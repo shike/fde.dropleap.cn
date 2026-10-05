@@ -21,6 +21,7 @@ import { SEEDS } from "./fde-company-seeds.mjs";
 const run = promisify(execFile);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const db = new DatabaseSync(path.join(ROOT, "data", "fde.db"));
+db.exec("PRAGMA busy_timeout = 8000");
 const require2 = createRequire(import.meta.url);
 let pinyinFn = null;
 try {
@@ -183,7 +184,13 @@ function addCompany({ name, region, type = "FDE服务商", website = null, note 
   const slug = makeSlug(nName);
   const ws = website || `https://www.${slug}.com`;
   const notes = website ? note : `${note}｜官网待确认`;
-  insert.run(nName, slug, ws, notes, now(), region || "中国", type, type);
+  try {
+    insert.run(nName, slug, ws, notes, now(), region || "中国", type, type);
+  } catch (e) {
+    usedSlugs.delete(slug);
+    console.log(`  ! insert 失败 ${nName}: ${String(e).slice(0, 60)}`);
+    return false;
+  }
   remember(nName);
   return true;
 }
@@ -392,17 +399,68 @@ async function searchBing(q) {
     ),
   ].slice(0, 12);
 }
-async function search(q) {
-  let urls = await searchBingRss(q);
-  if (urls.length < 3) {
-    await sleep(1500);
-    urls = await searchBing(q);
+const SEARCH_ENGINES = [searchWeixin, searchBingRss, searchCsdn, searchSo, searchJuejin, searchSogou, searchBing];
+const WX_JAR = "/tmp/wxcookies.txt";
+async function searchWeixin(q) {
+  const qe = encodeURIComponent(q);
+  // 带 cookie jar 两步走：先拿 SUID/ABTEST
+  await run("curl", ["-sL", "-m", "10", "-A", UA, "-c", WX_JAR, "-b", WX_JAR, "https://weixin.sogou.com/"]).catch(() => ({ stdout: "" }));
+  const { stdout: html } = await run("curl", [
+    "-sL", "-m", "12", "-A", UA, "-c", WX_JAR, "-b", WX_JAR,
+    `https://weixin.sogou.com/weixin?type=2&query=${qe}`,
+  ]).catch(() => ({ stdout: "" }));
+  if (!html || /antispider|验证码/.test(html)) return [];
+  const links = [...new Set([...html.matchAll(/href="(\/link\?url=[^"]+)"/g)].map((m) => "https://weixin.sogou.com" + m[1].replace(/&amp;/g, "&")))].slice(0, 10);
+  const out = [];
+  for (const l of links) {
+    const lu = l.replace(/ /g, "%20");
+    const { stdout: lp } = await run("curl", ["-sL", "-m", "10", "-A", UA, "-c", WX_JAR, "-b", WX_JAR, "-e", "https://weixin.sogou.com/", lu]).catch(() => ({ stdout: "" }));
+    const real = [...(lp.matchAll(/url \+= '([^']*)'/g))].map((m) => m[1]).join("");
+    await sleep(250);
+    if (real.startsWith("https://mp.weixin.qq.com/")) out.push(real);
   }
-  if (urls.length < 3) {
-    await sleep(1500);
-    urls = await searchSogou(q);
+  return out.filter((u) => !SKIP_HOST.test(u));
+}
+async function searchCsdn(q) {
+  const html = await curl(`https://so.csdn.net/api/v3/search?q=${encodeURIComponent(q)}&t=blog&p=1&size=15`);
+  let urls = [];
+  try {
+    const d = JSON.parse(html);
+    urls = (d.result_vos || []).map((it) => (it.url || "").split("?")[0]).filter(Boolean);
+  } catch {}
+  return [...new Set(urls)].filter((u) => !SKIP_HOST.test(u)).slice(0, 10);
+}
+async function searchJuejin(q) {
+  const html = await curl(`https://api.juejin.cn/search_api/v1/search?query=${encodeURIComponent(q)}&id_type=0&limit=15`);
+  let urls = [];
+  try {
+    const d = JSON.parse(html);
+    urls = ((d.data || []).map((x) => x?.result_model?.article_info?.article_id).filter(Boolean)).map((id) => `https://juejin.cn/post/${id}`);
+  } catch {}
+  return [...new Set(urls)].slice(0, 10);
+}
+async function search(q, rotate = 0) {
+  const order = SEARCH_ENGINES.map((_, i) => SEARCH_ENGINES[(i + rotate) % SEARCH_ENGINES.length]);
+  let urls = [];
+  for (const eng of order) {
+    urls = await eng(q);
+    if (urls.length >= 3) break;
+    await sleep(2000);
   }
   return urls;
+}
+async function searchSo(q) {
+  const html = await curl(`https://www.so.com/s?q=${encodeURIComponent(q)}&pn=1`);
+  if (/访问异常|验证码|antispider/i.test(html)) return [];
+  return [
+    ...new Set(
+      [...html.matchAll(/href="(https?:\/\/[^"]+)"/g)]
+        .map((m) => m[1].replace(/&amp;/g, "&"))
+        .filter((u) => !/so\.com|360\.cn|qihoo|leidian/i.test(u))
+        .filter((u) => !SKIP_HOST.test(u))
+        .filter((u) => !/\.(png|jpe?g|css|js|ico|svg|pdf|docx?|xlsx?)$/i.test(u))
+    ),
+  ].slice(0, 12);
 }
 
 // ---------- 查询矩阵 ----------
@@ -525,6 +583,45 @@ function buildQueries(batch) {
       { q: "知名 IT 培训 学校 有哪些", type: "认证与培训", city: null }
     );
   }
+  if (batch >= 4) {
+    for (const prov of ["浙江", "江苏", "广东", "山东", "四川", "湖北", "安徽", "福建", "湖南", "河南", "陕西", "辽宁"]) qs.push({ q: `${prov} 人工智能 企业 名单`, type: "FDE服务商", city: null });
+    for (const c of CITY_LIST.slice(0, 20)) qs.push({ q: `${c} 数字经济 龙头 企业 名单`, type: "FDE服务商", city: c });
+    for (const c of CITY_LIST.slice(0, 15)) qs.push({ q: `${c} IT 服务 公司 排名`, type: "FDE服务商", city: c });
+    for (const c of CITY_LIST.slice(0, 12)) qs.push({ q: `${c} 人工智能 训练营 培训 机构`, type: "认证与培训", city: c });
+    for (const ind of ["人力资源", "财税", "合同", "采购", "营销", "供应链", "地产"]) qs.push({ q: `${ind} 数字化 服务商 名单`, type: "FDE服务商", city: null });
+    qs.push(
+      { q: "BI 厂商 名单 中国", type: "FDE服务商", city: null },
+      { q: "ERP 厂商 名单 国产", type: "FDE服务商", city: null },
+      { q: "MES 厂商 名单 盘点", type: "FDE服务商", city: null },
+      { q: "WMS 仓储 系统 厂商 名单", type: "FDE服务商", city: null },
+      { q: "CRM 厂商 名单 国产", type: "FDE服务商", city: null },
+      { q: "电子合同 厂商 名单", type: "FDE服务商", city: null },
+      { q: "协同办公 厂商 名单", type: "FDE服务商", city: null },
+      { q: "AI 视觉 检测 公司 名单", type: "FDE服务商", city: null },
+      { q: "语音 识别 公司 名单 中国", type: "FDE服务商", city: null },
+      { q: "边缘计算 服务商 名单", type: "FDE服务商", city: null },
+      { q: "智算中心 服务商 名单", type: "FDE服务商", city: null },
+      { q: "大模型 微调 服务 公司 名单", type: "FDE服务商", city: null },
+      { q: "大模型 私有化 部署 服务商 名单", type: "FDE服务商", city: null },
+      { q: "RLHF 数据 标注 公司 名单", type: "FDE服务商", city: null },
+      { q: "AI 语料 数据 公司 名单", type: "FDE服务商", city: null },
+      { q: "智慧 营销 服务商 名单", type: "FDE服务商", city: null },
+      { q: "数字孪生 厂商 名单 盘点", type: "FDE服务商", city: null },
+      { q: "隐私计算 厂商 名单", type: "FDE服务商", city: null },
+      { q: "智能审核 服务商 名单", type: "FDE服务商", city: null },
+      { q: "风控 决策 引擎 厂商 名单", type: "FDE服务商", city: null },
+      { q: "RPA 独角兽 中国 名单", type: "FDE服务商", city: null },
+      { q: "低代码 独角兽 名单", type: "FDE服务商", city: null },
+      { q: "AI 开源 商业 公司 中国 名单", type: "FDE服务商", city: null },
+      { q: "人工智能 行业 解决方案 案例 服务商", type: "FDE服务商", city: null },
+      { q: "大模型 应用 场景 服务商 图谱", type: "FDE服务商", city: null },
+      { q: "AIGC 产业 图谱 服务商", type: "FDE服务商", city: null },
+      { q: "AI 投资 机构 眼中 服务商 名单", type: "FDE服务商", city: null },
+      { q: "信息发展 软件 服务 商 名单", type: "FDE服务商", city: null },
+      { q: "系统集成 资质 企业 名单 一级", type: "FDE服务商", city: null },
+      { q: "计算机 信息系统 集成 资质 企业 名单", type: "FDE服务商", city: null }
+    );
+  }
   return qs;
 }
 
@@ -546,13 +643,15 @@ async function harvest(batch) {
   console.log(`== harvest 批次 ${batch}：查询数 ${buildQueries(batch).length}｜断点URL ${processedUrls.size} ==`);
   const queries = buildQueries(batch);
   console.log(`== harvest 批次 ${batch}：${queries.length} 个查询 ==`);
+  let qi = 0;
   for (const { q, type, city } of queries) {
+    qi++;
     await diskGuard();
-    let urls = await search(q);
+    let urls = await search(q, qi % SEARCH_ENGINES.length);
     searchCalls++;
     if (urls.length < 3) {
       await sleep(3000);
-      urls = await search(q);
+      urls = await search(q, (qi + 1) % SEARCH_ENGINES.length);
       searchCalls++;
     }
     let qNew = 0;
@@ -612,6 +711,24 @@ function backfillRun() {
 
 const [, , cmd = "all", arg = "1"] = process.argv;
 await diskGuard();
+if (cmd === "urls") {
+  const file = arg;
+  const lines = (await readFile(file, "utf8")).split("\n").map((l) => l.trim()).filter(Boolean);
+  console.log(`== urls 模式：${lines.length} 个URL ==`);
+  for (const line of lines) {
+    await diskGuard();
+    const [u, t] = line.split(/\s+/);
+    const { n, title } = await harvestPage(u, { type: t || "FDE服务商", city: null });
+    if (n > 0) {
+      inserted += n;
+      console.log(`  ${u} +${n} (${title?.slice(0, 30) ?? ""})`);
+    }
+    await sleep(300);
+  }
+  const total = db.prepare("SELECT COUNT(*) n FROM companies").get().n;
+  console.log(`== urls done == 总数 ${total}｜本次新增 ${inserted}`);
+  process.exit(0);
+}
 if (cmd === "test" && arg && arg.startsWith("http")) {
   await harvestPage(arg, { type: "FDE服务商", city: null }, true);
   process.exit(0);

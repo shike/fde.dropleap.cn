@@ -19,7 +19,7 @@ try {
 const rows = db
   .prepare(
     `SELECT id, login, avatar_url FROM persons
-     WHERE platform='github' AND status IN ('candidate','approved') AND avatar_url IS NOT NULL`
+     WHERE platform='github' AND status IN ('candidate','approved') AND avatar_url IS NOT NULL AND avatar_file IS NULL`
   )
   .all();
 
@@ -53,7 +53,7 @@ console.log(`github avatars downloaded ${ok}/${rows.length}`);
 
 // 抖音：浏览器流程已落盘，回填路径
 let dy = 0;
-for (const r of db.prepare("SELECT id, login FROM persons WHERE platform='douyin' AND status IN ('candidate','approved')").all()) {
+for (const r of db.prepare("SELECT id, login FROM persons WHERE platform='douyin' AND status IN ('candidate','approved') AND avatar_file IS NULL").all()) {
   const sec = r.login.replace("douyin:", "");
   const rel = `/avatars/douyin-${sec.slice(0, 24)}.jpg`;
   try {
