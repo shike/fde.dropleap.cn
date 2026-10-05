@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import Database from "better-sqlite3";
 import path from "node:path";
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fde.dropleap.cn";
 
 function db() {
   const p = process.env.FDE_DB ?? path.resolve(process.cwd(), "..", "data", "fde.db");

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { siteStats, listPersons, recentPersons } from "@/lib/db";
 import { PersonCard } from "@/components/PersonCard";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fde.dropleap.cn";
 
 function JsonLd({ data }: { data: object }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;

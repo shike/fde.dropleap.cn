@@ -484,6 +484,47 @@ function buildQueries(batch) {
       { q: "大数据 人才培养 基地 认证 机构", type: "认证与培训", city: null }
     );
   }
+  if (batch >= 3) {
+    for (const c of CITY_LIST.slice(0, 30)) qs.push({ q: `${c} 软件 百强 企业 名单`, type: "FDE服务商", city: c });
+    for (const c of CITY_LIST.slice(0, 30)) qs.push({ q: `${c} 软件企业 100强 名单`, type: "FDE服务商", city: c });
+    for (const c of CITY_LIST.slice(0, 20)) qs.push({ q: `${c} 人工智能 产业 园区 企业 名单`, type: "FDE服务商", city: c });
+    for (const ind of INDUSTRIES) qs.push({ q: `${ind} 信息化 服务商 名单`, type: "FDE服务商", city: null });
+    for (const ind of ["制造", "医疗", "金融", "零售", "能源", "政务", "物流", "教育"]) qs.push({ q: `${ind} 软件 解决方案 商 名单`, type: "FDE服务商", city: null });
+    qs.push(
+      { q: "中国 软件 百强 企业 名单", type: "FDE服务商", city: null },
+      { q: "软件和信息技术 服务 百强 名单", type: "FDE服务商", city: null },
+      { q: "双跨 工业互联网 平台 名单", type: "FDE服务商", city: null },
+      { q: "AI 独角兽 企业 名单 2025", type: "FDE服务商", city: null },
+      { q: "大数据 独角兽 公司 名单", type: "FDE服务商", city: null },
+      { q: "SaaS 独角兽 中国 名单", type: "FDE服务商", city: null },
+      { q: "专精特新 软件 企业 名单", type: "FDE服务商", city: null },
+      { q: "智慧城市 中标 服务商 盘点", type: "FDE服务商", city: null },
+      { q: "数字化 转型 服务 商 生态 图谱", type: "FDE服务商", city: null },
+      { q: "人工智能 重点 企业 名单", type: "FDE服务商", city: null },
+      { q: "大模型 中标 厂商 排名 榜单", type: "FDE服务商", city: null },
+      { q: "大模型 项目 中标 统计 厂商", type: "FDE服务商", city: null },
+      { q: "MaaS 服务商 名单", type: "FDE服务商", city: null },
+      { q: "AI 中台 建设 服务商 名单", type: "FDE服务商", city: null },
+      { q: "知识图谱 公司 名单 中国", type: "FDE服务商", city: null },
+      { q: "NLP 自然语言处理 公司 名单", type: "FDE服务商", city: null },
+      { q: "OCR 文字识别 公司 名单", type: "FDE服务商", city: null },
+      { q: "生物识别 公司 名单 中国", type: "FDE服务商", city: null },
+      { q: "对话式 AI 厂商 名单", type: "FDE服务商", city: null },
+      { q: "智能 质检 厂商 名单", type: "FDE服务商", city: null },
+      { q: "AI 客服 外包 服务商 名单", type: "FDE服务商", city: null },
+      { q: "杭州 电商 AI 服务 商 名单", type: "FDE服务商", city: "杭州" },
+      { q: "广州 软件 外包 公司 名单", type: "FDE服务商", city: "广州" },
+      { q: "成都 AI 服务商 名单 盘点", type: "FDE服务商", city: "成都" },
+      { q: "南京 软件 服务商 名单 人工智能", type: "FDE服务商", city: "南京" },
+      { q: "西安 软件 信息 服务商 名单", type: "FDE服务商", city: "西安" },
+      { q: "济南 软件 企业 名单 100强", type: "FDE服务商", city: "济南" },
+      { q: "青岛 软件 企业 名单 100强", type: "FDE服务商", city: "青岛" },
+      { q: "无锡 物联网 企业 名单", type: "FDE服务商", city: "无锡" },
+      { q: "苏州 工业 软件 企业 名单", type: "FDE服务商", city: "苏州" },
+      { q: "IT 培训 机构 名单 排行", type: "认证与培训", city: null },
+      { q: "知名 IT 培训 学校 有哪些", type: "认证与培训", city: null }
+    );
+  }
   return qs;
 }
 

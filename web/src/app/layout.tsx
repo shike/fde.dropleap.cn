@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fde.dropleap.cn";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
