@@ -86,7 +86,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </div>
             <p className="mt-8 border-t border-neutral-100 pt-6 text-xs text-neutral-400">
-              © 2026 中国 FDE 名录 · 持续更新 · 数据来自公开渠道 ·
+              © 2026 中国 FDE 名录 · 持续更新 · 数据来自公开渠道 · 由{' '}
+              <a
+                href="https://dropleap.cn/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-neutral-600"
+              >
+                水滴跃动 Dropleap
+              </a>
+              {' '}运营 ·
               <a
                 href="https://beian.miit.gov.cn/"
                 target="_blank"
