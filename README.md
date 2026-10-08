@@ -2,6 +2,7 @@
 
 > 中国最权威的 Forward Deployed Engineer（前置部署工程师）名录
 > 线上地址：**[https://fde.dropleap.cn](https://fde.dropleap.cn)**
+> 运营方：[水滴跃动 Dropleap — 苏州企业 AI 落地服务商 · WorkBuddy 官方代理](https://dropleap.cn/)
 
 收录在中国大陆一线交付的 FDE 与 AI 落地从业者，以及延伸岗位、AI 从业者大名单、
 交付服务商、行业案例与各地政策——四个库相互关联，条条附证据链接，每日更新。
